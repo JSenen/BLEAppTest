@@ -15,7 +15,7 @@ struct ContentView: View {
             List(bluetoothManager.devices) { device in
                 NavigationLink(destination: BleDetail(device: device)) {
                     HStack {
-                        CircleView() // Vista de imagen circular
+                        CircleView(image: device.image) // Vista de imagen circular
                         VStack(alignment: .leading) {
                             Text(device.name)
                                 .font(.headline)

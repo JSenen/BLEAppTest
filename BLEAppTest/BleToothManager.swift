@@ -10,6 +10,7 @@ import CoreBluetooth
 
 class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     @Published var devices: [BleData] = []
+    private var discoveredDeviceMACs: Set<String> = [] // MACs únicos detectados
     
     private var centralManager: CBCentralManager!
     
@@ -20,7 +21,6 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn {
-            // Inicia la exploración de dispositivos
             centralManager.scanForPeripherals(withServices: nil, options: nil)
         } else {
             print("Bluetooth no está disponible o no está activado.")
@@ -31,18 +31,20 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         guard let name = peripheral.name else { return }
         let mac = peripheral.identifier.uuidString
         
-        // Verificar si el dispositivo ya está en la lista
-            if !devices.contains(where: { $0.mac == mac }) {
-                let newDevice = BleData(id: devices.count + 1, mac: mac, name: name, imageName: "Ble")
-                DispatchQueue.main.async {
-                    self.devices.append(newDevice)
-                }
+        // Evitar duplicados comprobando si el MAC ya está en el Set
+        if !discoveredDeviceMACs.contains(mac) {
+            discoveredDeviceMACs.insert(mac) // Añadir al Set de MACs únicos
+            let newDevice = BleData(id: devices.count + 1, mac: mac, name: name, imageName: "Ble")
+            DispatchQueue.main.async {
+                self.devices.append(newDevice)
             }
+        }
     }
     
     func restartScan() {
         centralManager.stopScan()
-        devices.removeAll() // Limpiar la lista de dispositivos
+        devices.removeAll()
+        discoveredDeviceMACs.removeAll() // Limpia el Set de MACs únicos
         centralManager.scanForPeripherals(withServices: nil, options: nil)
     }
 }

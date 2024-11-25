@@ -15,6 +15,10 @@ struct BleData: Hashable, Codable, Identifiable {
     var imageName: String // Este campo debe estar presente en la inicialización
     
     var image: Image {
-        Image(imageName)
-    }
+            if name.contains("Henkel_SmartDrawer") {
+                return Image("logohenkel") // Muestra la imagen logohenkel
+            } else {
+                return Image(imageName) // Muestra la imagen por defecto
+            }
+        }
 }

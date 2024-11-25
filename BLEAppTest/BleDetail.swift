@@ -12,7 +12,7 @@ struct BleDetail: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            CircleView() // Vista de imagen circular
+            CircleView(image: device.image) // Vista de imagen circular
                 .padding(.top, 40)
             
             Text(device.name)
