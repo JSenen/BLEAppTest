@@ -31,13 +31,13 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         guard let name = peripheral.name else { return }
         let mac = peripheral.identifier.uuidString
         
-        // Agregar dispositivo si no existe en la lista
-        let newDevice = BleData(id: devices.count + 1, mac: mac, name: name, imageName: "Ble")
-        if !devices.contains(where: { $0.mac == mac }) {
-            DispatchQueue.main.async {
-                self.devices.append(newDevice)
+        // Verificar si el dispositivo ya está en la lista
+            if !devices.contains(where: { $0.mac == mac }) {
+                let newDevice = BleData(id: devices.count + 1, mac: mac, name: name, imageName: "Ble")
+                DispatchQueue.main.async {
+                    self.devices.append(newDevice)
+                }
             }
-        }
     }
     
     func restartScan() {
