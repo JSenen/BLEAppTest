@@ -12,10 +12,10 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            List(bluetoothManager.devices) { device in
-                NavigationLink(destination: BleDetail(device: device)) {
+            List(bluetoothManager.devices, id: \.mac) { device in
+                NavigationLink(destination: BleDetail(device: device, bluetoothManager: bluetoothManager)) {
                     HStack {
-                        CircleView(image: device.image) // Vista de imagen circular
+                        CircleView(image: device.image)
                         VStack(alignment: .leading) {
                             Text(device.name)
                                 .font(.headline)
@@ -27,11 +27,18 @@ struct ContentView: View {
                     .padding(.vertical, 8)
                 }
             }
+
             .refreshable {
                 bluetoothManager.restartScan()
             }
             .navigationTitle("Dispositivos BLE")
         }
     }
+}
+
+
+#Preview {
+    ContentView()
+        
 }
 

@@ -7,12 +7,14 @@
 
 import SwiftUI
 import Foundation
+import CoreBluetooth
 
-struct BleData: Hashable, Codable, Identifiable {
+struct BleData: Hashable, Identifiable {
     var id: Int
     var mac: String
     var name: String
     var imageName: String // Este campo debe estar presente en la inicialización
+    var peripheral: CBPeripheral // Referencia al dispositivo Bluetooth
     
     var image: Image {
             if name.contains("Henkel_SmartDrawer") {

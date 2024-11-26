@@ -6,13 +6,18 @@
 //
 
 import SwiftUI
+import CoreBluetooth
 
 struct BleDetail: View {
     let device: BleData
+    
+    @ObservedObject var bluetoothManager: BluetoothManager // Observa el BluetoothManager
 
+
+    
     var body: some View {
         VStack(spacing: 20) {
-            CircleView(image: device.image) // Vista de imagen circular
+            CircleView(image: device.image)
                 .padding(.top, 40)
             
             Text(device.name)
@@ -23,15 +28,30 @@ struct BleDetail: View {
                 .font(.title3)
                 .foregroundColor(.gray)
             
-            Spacer()
-        }
-        .padding()
-        .navigationTitle("Detalles BLE")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
+            Text("Estado: \(bluetoothManager.connectionStatus)") // Estado del manager
+                           .foregroundColor(bluetoothManager.isConnecting ? .blue : .gray)
+                           .font(.headline)
+                       
+            
+            Button(action: {
+                           bluetoothManager.connectToDevice(device.peripheral)
+                       }) {
+                           Text(bluetoothManager.isConnecting ? "Conectando..." : "Conectar")
+                               .padding()
+                               .background(bluetoothManager.isConnecting ? Color.gray : Color.blue)
+                               .foregroundColor(.white)
+                               .cornerRadius(10)
+                       }
+                       .disabled(bluetoothManager.isConnecting)
+                       
+                       Spacer()
+                   }
+                   .padding()
+                   .navigationTitle("Detalles BLE")
+                   .navigationBarTitleDisplayMode(.inline)
+               }
+           }
+    
+   
 
-#Preview {
-    BleDetail(device: BleData(id: 1, mac: "00:11:22:33:44:55", name: "Dispositivo BLE", imageName: "Ble"))
-}
 
