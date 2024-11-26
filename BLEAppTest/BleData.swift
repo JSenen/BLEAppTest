@@ -15,6 +15,9 @@ struct BleData: Hashable, Identifiable {
     var name: String
     var imageName: String // Este campo debe estar presente en la inicialización
     var peripheral: CBPeripheral // Referencia al dispositivo Bluetooth
+    var rssi: Int // Potencia de señal
+    var manufacturerData: Data? // Datos del fabricante
+    var serviceUUIDs: [CBUUID] // UUIDs de servicios
     
     var image: Image {
             if name.contains("Henkel_SmartDrawer") {

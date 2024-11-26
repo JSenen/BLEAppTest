@@ -17,6 +17,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private var centralManager: CBCentralManager!
     @Published var connectedPeripheral: CBPeripheral?
     @Published var connectionStatus: String = "Desconectado"
+    @Published var discoveredCharacteristics: [CBCharacteristic] = [] // Características descubiertas
 
     override init() {
         super.init()
@@ -38,15 +39,32 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
         guard let name = peripheral.name else { return }
         let mac = peripheral.identifier.uuidString
+        let rssiValue = RSSI.intValue // Potencia de señal
+        
+        // Manufacturer Data (si está disponible)
+        let manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data
+        
+        // UUIDs de servicios
+        let serviceUUIDs = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID]
         
         if !discoveredDeviceMACs.contains(mac) {
             discoveredDeviceMACs.insert(mac)
-            let newDevice = BleData(id: devices.count + 1, mac: mac, name: name, imageName: "Ble", peripheral: peripheral)
+            let newDevice = BleData(
+                id: devices.count + 1,
+                mac: mac,
+                name: name,
+                imageName: "Ble",
+                peripheral: peripheral,
+                rssi: rssiValue,
+                manufacturerData: manufacturerData,
+                serviceUUIDs: serviceUUIDs ?? []
+            )
             DispatchQueue.main.async {
                 self.devices.append(newDevice)
             }
         }
     }
+
     
     // Conectar a un dispositivo
     func connectToDevice(_ peripheral: CBPeripheral) {
@@ -127,8 +145,38 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             print("Servicio encontrado: \(service.uuid)")
             peripheral.discoverCharacteristics(nil, for: service) // Descubre características
         }
+        
+        
+    }
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        if let error = error {
+            print("Error al descubrir características: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.connectionStatus = "Error al descubrir características"
+            }
+            return
+        }
+        
+        guard let characteristics = service.characteristics else {
+            print("No se encontraron características para el servicio \(service.uuid)")
+            return
+        }
+        
+        print("Características encontradas para el servicio \(service.uuid): \(characteristics.map { $0.uuid })")
+        
+        // Agrega las características descubiertas a la lista
+        DispatchQueue.main.async {
+            self.discoveredCharacteristics.append(contentsOf: characteristics)
+            self.connectionStatus = "Características descubiertas"
+        }
     }
 
 
-
+    func resetConnectionState() {
+        self.connectionStatus = "Desconectado"
+        self.isConnecting = false
+        self.discoveredCharacteristics.removeAll()
+    }
 }
+
+
